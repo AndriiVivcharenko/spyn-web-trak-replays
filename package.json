@@ -1,8 +1,8 @@
 {
   "name": "spyn-trak-replays",
   "version": "1.0.0",
-  "description": "Made with create-react-library",
-  "author": "AndriiVivcharenko",
+  "description": "React library that contains all the necessary logic for playing back recorded traks",
+  "author": "Spyn",
   "license": "MIT",
   "repository": "AndriiVivcharenko/spyn-trak-replays",
   "main": "dist/index.js",
