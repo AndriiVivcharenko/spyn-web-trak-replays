@@ -1,6 +1,5 @@
 import {createContext, useCallback, useContext, useEffect, useState} from "react"
 import {ReplayLogsContext, ReplayLogsContextType} from "./ReplayLogsProvider"
-import {MUSIC_VIDEO_ID, TRAINER_CAMERA_VIDEO_ID} from "./Body/TrainerCamera"
 import {CallMode, TimerStage} from "./types"
 import {
   AgoraRecording,
@@ -9,7 +8,7 @@ import {
   OndemandState,
   Timer,
   TrakReplayEvent
-} from "../models/ReplayModel"
+} from "../models"
 import React from "react";
 
 interface ReplayState {
@@ -74,7 +73,11 @@ export const ReplayLogsControllerContext = createContext<ReplayLogsControllerCon
 let lastTimeoutStarted = 0
 export let timeoutElapsed = 0
 
-const ReplayLogsControllerProvider = ({children}) => {
+const ReplayLogsControllerProvider = ({children, videoId, musicId}: {
+  children: any,
+  videoId: string,
+  musicId: string
+}) => {
 
   const {entry} = useContext<ReplayLogsContextType>(ReplayLogsContext)
 
@@ -149,7 +152,7 @@ const ReplayLogsControllerProvider = ({children}) => {
         config.video.currentTime = secondsElapsed + (timeoutElapsed / 1000) + 0.25
       }
 
-      const video: HTMLVideoElement | HTMLElement | null = document.getElementById(TRAINER_CAMERA_VIDEO_ID)
+      const video: HTMLVideoElement | HTMLElement | null = document.getElementById(videoId)
       if (video instanceof HTMLVideoElement) {
         syncVideoElementTime({
           video: video,
@@ -158,7 +161,7 @@ const ReplayLogsControllerProvider = ({children}) => {
         })
       }
 
-      const music: HTMLVideoElement | HTMLElement | null = document.getElementById(MUSIC_VIDEO_ID)
+      const music: HTMLVideoElement | HTMLElement | null = document.getElementById(musicId)
       if(music instanceof  HTMLVideoElement) {
         syncVideoElementTime({
           video: music,

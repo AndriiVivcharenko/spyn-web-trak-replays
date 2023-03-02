@@ -1,11 +1,7 @@
-import {Column, Time, Subtitle} from "./styles"
-import React, {useEffect, useState} from "react"
-import Title from "./Title"
+import {useEffect, useState} from "react"
 import {useContext} from "react"
 import {ReplayLogsControllerContext} from "../../ReplayLogsControllerProvider"
 import {TimerStage} from "../../types"
-import { useTheme } from "styled-components"
-import { formatMilliseconds } from "../../../utils/replays"
 
 const emptyBeeps = {
   "1": false,
@@ -15,19 +11,20 @@ const emptyBeeps = {
 
 let timerEnabled = true
 
-const Countdown = () => {
-
-  const themeMode = useTheme();
+const useCountdown = ({playBeeps}: {
+  playBeeps: boolean
+}): {
+  leftTime: number
+} => {
 
   const [playedBeeps, setPlayedBeeps] = useState(emptyBeeps)
 
   const [leftTime, setLeftTime] = useState<number>(0)
   const [stateInterval, setStateInterval] = useState<any>()
-  const [lastPlayingStartedAt, setLastPlayingStartedAt] = useState()
+  const [lastPlayingStartedAt, setLastPlayingStartedAt] = useState<number | undefined>()
 
   const {
     isPlaying,
-    currentResource,
     currentStage,
     remainExercise,
     remainRecovery,
@@ -36,8 +33,8 @@ const Countdown = () => {
   } = useContext(ReplayLogsControllerContext)
 
   const runTimer = () => {
-    setLastPlayingStartedAt(currentTimer.startAt)
-    setLeftTime(() => (currentTimer.time * 1000) + currentTimer.poseBuffer)
+    setLastPlayingStartedAt(currentTimer?.startAt)
+    setLeftTime(() => ((currentTimer?.time ?? 1) * 1000) + (currentTimer?.poseBuffer ?? 0))
     setStateInterval((prev: any) => {
       clearInterval(prev)
       return setInterval(() => {
@@ -134,36 +131,10 @@ const Countdown = () => {
     }
   }, [isPlaying, leftTime, playedBeeps])
 
-  return (<Column>
-    <Title border={`${currentStage !== TimerStage.PREPARING_STAGE ?
-      // [3, 2, 1].includes(leftTime ? Math.round(leftTime / 1000) : 0) ? palette.RED:
-      currentStage === TimerStage.PLAYING_REST ? themeMode.accents.orange2 :
-      themeMode.accents.repTime : themeMode.steel.light} solid 2px`}
-           reps={currentResource ?
-             currentResource.repetitions ? currentResource.repetitions : 10
-             : 0}
-           stage={currentStage}
-           type={currentResource ? currentResource.ondemandLesson?.lessonType : undefined}
-     background={currentStage === TimerStage.PLAYING_REST ? themeMode.accents.orange2 : themeMode.accents.accent01}/>
+  return {
+    leftTime: leftTime
+  }
 
-    <Time style={{
-      border: `${currentStage !== TimerStage.PREPARING_STAGE ?
-        // [3, 2, 1].includes(leftTime ? Math.round(leftTime / 1000) : 0) ? palette.RED:
-        currentStage === TimerStage.PLAYING_REST ? themeMode.accents.orange2 :
-        themeMode.accents.repTime : themeMode.steel.light} solid 4px`,
-    }}>
-      {formatMilliseconds(
-        currentTimer ? Math.max(0, Math.min(currentTimer.time * 1000, leftTime ? leftTime : 0)) :
-          Math.max(0, leftTime ? leftTime : 0)
-      )}
-    </Time>
-
-    <Subtitle>
-      Recorded
-    </Subtitle>
-
-    {/*</Body>*/}
-  </Column>)
 }
 
-export default Countdown
+export default useCountdown

@@ -2,8 +2,6 @@ import {createContext, useContext, useEffect, useState} from "react"
 import {ReplayLogsContext} from "./ReplayLogsProvider"
 import Hls from "hls.js"
 import React from "react"
-import {getVideoPlaylist} from "../utils/replays";
-import {FirebaseStorage} from "@firebase/storage";
 
 export interface MusicPlaylist {
   resource: number,
@@ -23,11 +21,25 @@ interface Progress {
   current: number,
   total: number
 }
+export type GetVideoPlayerListConfig = {
+  eventUid: string,
+  resource: string,
+  musicResources: number[],
+  success: (videoUrl: string, musicUrls: MusicPlaylist[]) => void,
+  error?: (e: any) => void,
+  progress: (progress: {
+    current: number,
+    total: number
+  }) => void
+}
+export type GetVideoPlaylist = (config: GetVideoPlayerListConfig) => Promise<void>
 
-const ReplayLogsPlaylistProvider = ({children, buildProgress, storage}: {
+
+
+const ReplayLogsPlaylistProvider = ({children, buildProgress, getVideoPlaylist}: {
   children: any,
   buildProgress: (progress: number) => any,
-  storage: FirebaseStorage
+  getVideoPlaylist: GetVideoPlaylist
 }) => {
 
   const {entry} = useContext(ReplayLogsContext)
@@ -41,11 +53,11 @@ const ReplayLogsPlaylistProvider = ({children, buildProgress, storage}: {
   })
 
   useEffect(() => {
+    console.log("Entry ", entry)
     if (entry) {
       getVideoPlaylist({
         eventUid: entry.event_id,
         resource: entry.resource,
-        storage: storage,
         musicResources: entry.logs
           .filter((e) => e.currentMusic)
           .map((e) => e.currentMusic!.timestamp)

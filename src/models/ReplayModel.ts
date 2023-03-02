@@ -1,4 +1,4 @@
-import {TimerStage} from "../replay/types";
+import {LessonType, TimerStage} from "../replay/types";
 
 export interface TrakPose {
   duration: number
@@ -53,6 +53,7 @@ export interface OndemandResource {
   remainRecovery?: number
   trainerVolume?: number
   musicVolume?: number
+  repetitions?: number
   ondemandLesson?: OndemandLesson
 }
 
@@ -82,7 +83,7 @@ export interface OndemandState {
 export interface OndemandLesson {
   lessonID: string
   lessonName: string
-  lessonType: string
+  lessonType: LessonType
   lessonVideoGif: string
   lessonVideoUrl: string
   thumbNailUrl: string

@@ -27,3 +27,4 @@ export const parseLessonType = (type: string) => {
   }
   return LessonType.repetition
 }
+

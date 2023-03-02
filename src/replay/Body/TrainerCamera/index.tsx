@@ -1,13 +1,12 @@
-import {Body, DevicesStatusOverlay} from "./styles"
 import React, {useContext, useEffect, useRef, useState} from "react"
 import {ReplayLogsPlaylistContext} from "../../ReplayLogsPlaylistProvider"
 import Hls from "hls.js"
 import {ReplayLogsControllerContext} from "../../ReplayLogsControllerProvider"
 
-export const TRAINER_CAMERA_VIDEO_ID = "trainer-camera-video"
-export const MUSIC_VIDEO_ID = "music-video"
-
-const TrainerCamera = ({visible}) => {
+const TrainerCamera = ({musicId, videoId}: {
+  musicId: string
+  videoId: string
+}) => {
 
   const {
     playlistUrl,
@@ -169,14 +168,12 @@ const TrainerCamera = ({visible}) => {
 
 
   // @ts-ignore
-  return (<Body style={!visible ? {
-    visibility: "hidden"
-  } : null}>
-    {playlistUrl ? <video autoPlay={false} data-setup='{}' id={TRAINER_CAMERA_VIDEO_ID}
+  return (<>
+    {playlistUrl ? <video autoPlay={false} data-setup='{}' id={videoId}
       // @ts-ignore
       onCanPlay={onCanPlay} preload="auto" ref={trainerCameraPlayer}>
     </video> : null}
-    <video autoPlay={false} data-setup="{}" id={MUSIC_VIDEO_ID} onCanPlay={onMusicCanPlay} preload="auto"
+    <video autoPlay={false} data-setup="{}" id={musicId} onCanPlay={onMusicCanPlay} preload="auto"
             // @ts-ignore
            ref={musicPlayer}
           // @ts-ignore
@@ -185,12 +182,7 @@ const TrainerCamera = ({visible}) => {
       height: 0
     }}/>
 
-    <DevicesStatusOverlay>
-      {/*{!trainerMicOn ? <DisabledMicIcon height={18} width={16}/> : null}*/}
-      {/*{!trainerCameraOn ? <DisabledCameraIcon height={18} width={16}/> : null}*/}
-    </DevicesStatusOverlay>
-
-  </Body>)
+  </>)
 }
 
 export default TrainerCamera

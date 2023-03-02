@@ -2,6 +2,7 @@
   "compilerOptions": {
     "outDir": "dist",
     "module": "esnext",
+    "target": "esnext",
     "lib": ["dom", "esnext"],
     "moduleResolution": "node",
     "jsx": "react",
@@ -19,5 +20,6 @@
     "downlevelIteration": true
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist", "example"]
+  "exclude": ["node_modules", "dist", "example"],
+  "rootDir": "src"
 }
