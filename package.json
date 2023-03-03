@@ -72,7 +72,6 @@
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-serve": "^2.0.2",
     "rollup-plugin-dts": "^5.2.0",
-    "rollup-plugin-esbuild": "^5.0.0",
-    "rollup-plugin-sourcemaps": "^0.6.3"
+    "rollup-plugin-esbuild": "^5.0.0"
   }
 }
