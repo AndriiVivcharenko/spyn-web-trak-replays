@@ -1,15 +1,7 @@
-import {createContext, useCallback, useContext, useEffect, useState} from "react"
+import React, {createContext, useCallback, useContext, useEffect, useState} from "react"
 import {ReplayLogsContext, ReplayLogsContextType} from "./ReplayLogsProvider"
 import {CallMode, TimerStage} from "./types"
-import {
-  AgoraRecording,
-  OndemandParticipant,
-  OndemandResource,
-  OndemandState,
-  Timer,
-  TrakReplayEvent
-} from "../models"
-import React from "react";
+import {AgoraRecording, OndemandParticipant, OndemandResource, OndemandState, Timer, TrakReplayEvent} from "../models"
 
 interface ReplayState {
   timer: any,
@@ -37,7 +29,8 @@ interface ReplayLogsControllerContextType {
   currentTimer: Timer | undefined,
   lastRecordingIndex: number,
   setReplayPlaying: any,
-  logs: OndemandState[]
+  logs: OndemandState[],
+  takeover: boolean
 }
 
 export const ReplayLogsControllerContext = createContext<ReplayLogsControllerContextType>({
@@ -54,6 +47,7 @@ export const ReplayLogsControllerContext = createContext<ReplayLogsControllerCon
   trainerMicOn: false,
   isPlaying: false,
   logs: [],
+  takeover: false,
   callMode: CallMode.broadcast,
   currentStage: TimerStage.PREPARING_STAGE,
   seekToLog: () => {
@@ -90,6 +84,7 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId}: {
   const [trainerUid, setTrainerUid] = useState<number>()
   // const [trainerPrivateMode, setTrainerPrivateMode] = useState<number | undefined>()
   const [isPlaying, setIsPlaying] = useState<boolean>(true)
+  const [takeover, setTakeover] = useState<boolean>(false)
   const [currentResource, setCurrentResource] = useState<OndemandResource | undefined>()
   const [remainExercise, setRemainExercise] = useState<number | undefined>()
   const [remainRecovery, setRemainRecovery] = useState<number | undefined>()
@@ -144,10 +139,19 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId}: {
           i = entry.logs.findIndex((e) => e.ondemandEvents.includes(config.event))
         }
 
+
+        console.log("logs: ", entry.logs)
+
+        console.log("Prev: ", entry.logs[i === -1 ? 0 : i]);
+        console.log("Curr: ", entry.logs[index])
+
         const prevTime: number = Date.parse(entry.logs[i === -1 ? 0 : i].currentTimestamp) / 1000
         const currTime = Date.parse(entry.logs[index].currentTimestamp) / 1000
 
+        console.log(`(${currTime} - ${prevTime}) = `, (currTime - prevTime))
         const secondsElapsed = (currTime - prevTime)
+
+        console.log(`${secondsElapsed} + (${timeoutElapsed} / 1000) + 0.25 = `, secondsElapsed + (timeoutElapsed / 1000) + 0.25)
 
         config.video.currentTime = secondsElapsed + (timeoutElapsed / 1000) + 0.25
       }
@@ -240,6 +244,12 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId}: {
             setCurrentStage(entry.logs[index].timer!.stage)
           }
           break
+        case TrakReplayEvent.trainerTakeover:
+          setTakeover(true)
+          break;
+        case TrakReplayEvent.trainerTakeoverEnd:
+          setTakeover(false)
+          break;
         default:
           break
       }
@@ -402,7 +412,8 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId}: {
     lastRecordingIndex,
     setReplayPlaying,
     currentMusicResource,
-    logs: entry?.logs ?? []
+    logs: entry?.logs ?? [],
+    takeover
   }}>{children}</ReplayLogsControllerContext.Provider>)
 }
 
