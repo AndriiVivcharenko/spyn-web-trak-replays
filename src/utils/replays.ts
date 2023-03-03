@@ -37,11 +37,14 @@ export const onTimerVideoUpdate = (video, timer: Timer, setVideoTimeout, exercis
     }
 
 
-    if (video && timer.totalTime && video instanceof HTMLVideoElement && (exerciseConfig?.type === LessonType.freestyle))  {
+    if (video && timer.totalTime &&
+        video instanceof HTMLVideoElement && !isNaN(video.duration) && video.duration &&
+        (exerciseConfig?.type === LessonType.freestyle))  {
       console.log("timer: ", timer)
+      console.log("video duration: ", video.duration)
       console.log("exercise duration: ", exerciseConfig.exerciseDuration)
-      console.log("NEW TIME: ", (timer.totalTime - timer.time) % exerciseConfig.exerciseDuration)
-      video.currentTime = (timer.totalTime - timer.time) % exerciseConfig.exerciseDuration
+      console.log("NEW TIME: ", (timer.totalTime - timer.time) % video.duration)
+      video.currentTime = (timer.totalTime - timer.time) % video.duration
     }
 
     setVideoTimeout(prev => {
