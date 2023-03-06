@@ -43,8 +43,11 @@ export const onTimerVideoUpdate = (video, timer: Timer, setVideoTimeout, exercis
       console.log("timer: ", timer)
       console.log("video duration: ", video.duration)
       console.log("exercise duration: ", exerciseConfig.exerciseDuration)
-      console.log("NEW TIME: ", (timer.totalTime - timer.time) % video.duration)
-      video.currentTime = (timer.totalTime - timer.time) % video.duration
+      const newTime = (timer.totalTime - timer.time) % video.duration;
+      console.log("NEW TIME: ", newTime);
+      if(Math.abs(newTime - video.currentTime) > 0.67) {
+        video.currentTime = (timer.totalTime - timer.time) % video.duration
+      }
     }
 
     setVideoTimeout(prev => {
