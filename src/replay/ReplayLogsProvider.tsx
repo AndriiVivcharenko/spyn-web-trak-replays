@@ -1,6 +1,6 @@
 import React, {createContext, useEffect, useState} from "react"
 import {TimerStage} from "./types"
-import {OndemandState, ReplayModel, TrakReplayEvent} from "../models/ReplayModel"
+import {OndemandState, ReplayModel, TrakReplayEvent} from "../models"
 
 export interface ReplayLogsContextType {
   entry?: ReplayModel
@@ -80,19 +80,44 @@ const ReplayLogsProvider = (props: {
           const logEntry: OndemandState = JSON.parse(JSON.stringify(logs[i]))
           const nextLogEntry: OndemandState = JSON.parse(JSON.stringify(logs[i+1]))
 
+          const syncTimerWithExerciseConditionally = () => {
+            if(logEntry.timer?.time === 0 && (logEntry.timer?.totalTime === 0 || !logEntry.timer?.totalTime)) {
+
+              console.log("Current Timer: ", logEntry.timer);
+              console.log("Current resource: " , logEntry.currentResource);
+              for(let j = i; j < logs.length; j++) {
+                const element = logs[j];
+                if(element.timer?.time !== 0) {
+                  logEntry.timer = element.timer;
+                  logEntry.currentResource = element.currentResource;
+                  break;
+                }
+              }
+              console.log("Index: ", i);
+              console.log("New Timer: ", logEntry.timer);
+              console.log("New resource: ", logEntry.currentResource)
+
+            }
+          }
+
           if (nextLogEntry.timer &&
               (nextLogEntry.timer.stage === TimerStage.PLAYING_EXERCISE || nextLogEntry.timer.stage === TimerStage.PLAYING_REST)) {
             logEntry.timer = nextLogEntry.timer
+            logEntry.currentResource = nextLogEntry.currentResource
             if (logEntry.currentResource && nextLogEntry.currentResource) {
               logEntry.currentResource.remainRecovery = nextLogEntry.currentResource.remainRecovery
               logEntry.currentResource.remainExercise = nextLogEntry.currentResource.remainExercise
             }
+            syncTimerWithExerciseConditionally();
+            // if(nextLogEntry.timer?.time)
           } else if (!nextLogEntry.timer
               && nextLogEntry.ondemandEvents.some(item => replayEventList.includes(item))) {
+            logEntry.currentResource = nextLogEntry.currentResource;
             if (logEntry.currentResource && nextLogEntry.currentResource) {
               logEntry.currentResource.remainRecovery = nextLogEntry.currentResource.remainRecovery
               logEntry.currentResource.remainExercise = nextLogEntry.currentResource.remainExercise
             }
+            syncTimerWithExerciseConditionally();
           }
 
           logEntry.ondemandEvents = [
@@ -187,6 +212,7 @@ const ReplayLogsProvider = (props: {
       // }))
 
 
+      console.log(copy.logs)
       setEntry(copy)
     }
   }, [entry])

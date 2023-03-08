@@ -1,188 +1,224 @@
-import React, {useContext, useEffect, useRef, useState} from "react"
-import {ReplayLogsPlaylistContext} from "../../ReplayLogsPlaylistProvider"
+import React from "react"
+import {MusicPlaylist} from "../../ReplayLogsPlaylistProvider"
 import Hls from "hls.js"
-import {ReplayLogsControllerContext} from "../../ReplayLogsControllerProvider"
+import {AgoraRecording} from "../../../models";
 
-const TrainerCamera = ({musicId, videoId}: {
-  musicId: string
-  videoId: string
-}) => {
+export class TrainerCameraController {
+    readonly musicId: string
+    readonly videoId: string
+    readonly playlistUrl: string
+    readonly musicPlaylists: MusicPlaylist[]
 
-  const {
-    playlistUrl,
-    musicPlaylists
-  } = useContext(ReplayLogsPlaylistContext)
-  const {
-    replayPlaying,
-    currentMusicResource
-  } = useContext(ReplayLogsControllerContext)
+    private isInit: boolean = false;
 
-  const trainerCameraPlayer = useRef<HTMLVideoElement>()
-  const musicPlayer = useRef<HTMLVideoElement>()
+    private videoHls: Hls | undefined;
+    private chromeTabHls: Hls | undefined;
+    private currentMusicResource: AgoraRecording
 
-  const [hls, setHls] = useState < Hls | undefined > (undefined)
-  const [musicHls, setMusicHls] = useState < {
-    hls: Hls | undefined,
-    id: number | undefined
-  } > ({
-    hls: undefined,
-    id: undefined
-  })
-
-  useEffect(() => {
-    if(currentMusicResource && (!musicHls.hls || currentMusicResource.timestamp !== musicHls.id) && musicPlaylists) {
-      setMusicHls(() => {
-
-        const playlist = musicPlaylists.find((e) => e.resource === currentMusicResource.timestamp)
-
-        if (Hls.isSupported()) {
-          if(musicPlayer.current) {
-            playlist?.hls.detachMedia()
-            playlist?.hls.attachMedia(musicPlayer.current)
-          }
-
-          const sync = () => {
-            if(musicPlayer.current) {
-              musicPlayer.current.play().catch((err) => {
-                console.error(err)
-              })
-            }
-          }
-
-          playlist?.hls.once(Hls.Events.ERROR, () => {
-            sync()
-          })
-
-          playlist?.hls.once(Hls.Events.MEDIA_ATTACHED, event => {
-            sync()
-          })
-
-        } else if(musicPlayer.current && playlist) {
-            musicPlayer.current.src = playlist?.url ?? ""
-        }
-
-        return {
-          hls: hls,
-          id: currentMusicResource.timestamp
-        }
-      })
-    }else if(!currentMusicResource && musicHls.hls) {
-      musicHls.hls.detachMedia()
-      setMusicHls({
-        hls: undefined,
-        id: undefined
-      })
+    constructor(config: { musicId: string, videoId: string, playlistUrl: string, musicPlaylists: MusicPlaylist[] }) {
+        const {musicId, videoId, playlistUrl, musicPlaylists} = config;
+        this.musicId = musicId;
+        this.videoId = videoId;
+        this.playlistUrl = playlistUrl;
+        this.musicPlaylists = musicPlaylists;
     }
 
-  }, [currentMusicResource, musicPlaylists])
+    private getVideoPlayerConditionally(onTrainerVideoPlayer: (e: HTMLVideoElement) => void) {
+        const trainerCameraPlayer = document.getElementById(this.videoId);
+        if (trainerCameraPlayer && trainerCameraPlayer instanceof HTMLVideoElement) {
+            onTrainerVideoPlayer(trainerCameraPlayer);
+        }
+    }
 
-  useEffect(() => {
-    if (!hls && playlistUrl) {
-      setHls(() => {
+    private getMusicPlayerConditionally(onMusicPlayer: (e: HTMLVideoElement) => void) {
+        const musicPlayer = document.getElementById(this.musicId);
+        if (musicPlayer && musicPlayer instanceof HTMLVideoElement) {
+            onMusicPlayer(musicPlayer);
+        }
+    }
+
+    private getPlayersConditionally(onMusicPlayer: (e: HTMLVideoElement) => void, onTrainerVideoPlayer: (e: HTMLVideoElement) => void) {
+        this.getVideoPlayerConditionally(onTrainerVideoPlayer);
+        this.getMusicPlayerConditionally(onMusicPlayer);
+    }
+
+    attach(config: {
+        onceAttachedTrainerVideo?: () => void,
+        onceAttachedChromeTabAudio?: () => void
+    }) {
+        this.getPlayersConditionally(e => {
+            this.chromeTabHls?.once(Hls.Events.MEDIA_ATTACHED, e => {
+                if (config.onceAttachedTrainerVideo) {
+                    config.onceAttachedTrainerVideo()
+                }
+            });
+            this.chromeTabHls?.attachMedia(e);
+        }, e => {
+            this.videoHls?.once(Hls.Events.MEDIA_ATTACHED, e => {
+                if (config.onceAttachedChromeTabAudio) {
+                    config.onceAttachedChromeTabAudio();
+                }
+            })
+            this.videoHls?.attachMedia(e);
+        })
+    }
+
+    play() {
+        this.getPlayersConditionally(e => {
+            e.play().catch(() => {
+            });
+        }, e => {
+            e.play().catch(() => {
+            });
+        })
+    }
+
+    pause() {
+        this.getPlayersConditionally(e => {
+            e.pause();
+        }, e => {
+            e.pause();
+        })
+    }
+
+    detach() {
+        this.videoHls?.media?.pause();
+        this.videoHls?.detachMedia();
+        this.chromeTabHls?.media?.pause();
+        this.chromeTabHls?.detachMedia();
+    }
+
+    isInitialized() {
+        return this.isInit;
+    }
+
+    init() {
+        this.initChromeTabMusic();
+        this.initTrainerVideo();
+
+        this.isInit = true;
+    }
+
+    initChromeTabMusic() {
+
+
+        const playlist = this.musicPlaylists.find((e) => e.resource === this.currentMusicResource.timestamp)
+
+        const musicPlayer = document.getElementById(this.musicId);
+
+        if (!musicPlayer || !(musicPlayer instanceof HTMLVideoElement)) {
+            return;
+        }
+
+        if (Hls.isSupported()) {
+            playlist?.hls.detachMedia()
+            playlist?.hls.attachMedia(musicPlayer)
+
+            const sync = () => {
+                musicPlayer.play().catch((err) => {
+                    console.error(err)
+                })
+            }
+
+            playlist?.hls.once(Hls.Events.ERROR, () => {
+                sync()
+            })
+
+            playlist?.hls.once(Hls.Events.MEDIA_ATTACHED, event => {
+                sync()
+            })
+
+            this.chromeTabHls = playlist?.hls;
+
+        } else if (musicPlayer && playlist) {
+            musicPlayer.src = playlist?.url ?? ""
+        }
+
+
+    }
+
+    initTrainerVideo() {
+
         const hls = new Hls()
 
-        if (Hls.isSupported()) {
+        const trainerCameraPlayer = document.getElementById(this.videoId);
 
-          hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-            console.log("video and hls.js are now bound together !")
-          })
-          hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
-            console.log(
-              "manifest loaded, found " + data.levels.length + " quality level"
-            )
-
-            if(trainerCameraPlayer.current) {
-              trainerCameraPlayer.current.play().catch((err) => {
-                // console.error(err)
-              })
-            }
-          })
-          hls.on(Hls.Events.MEDIA_DETACHED, event => {
-            if(trainerCameraPlayer.current) {
-              hls.attachMedia(trainerCameraPlayer.current)
-            }
-          })
-
-          hls.loadSource(playlistUrl)
-          if(trainerCameraPlayer.current) {
-            hls.attachMedia(trainerCameraPlayer.current)
-          }
-
-        } else if(trainerCameraPlayer.current) {
-          trainerCameraPlayer.current.src = playlistUrl
+        if (!trainerCameraPlayer || !(trainerCameraPlayer instanceof HTMLVideoElement)) {
+            return;
         }
 
-        return hls
-      })
+        if (Hls.isSupported()) {
+
+            hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+                console.log("video and hls.js are now bound together !")
+            })
+            hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+                console.log(
+                    "manifest loaded, found " + data.levels.length + " quality level"
+                )
+
+                trainerCameraPlayer.play().catch((err) => {
+                    // console.error(err)
+                })
+            })
+            hls.on(Hls.Events.MEDIA_DETACHED, event => {
+                hls.attachMedia(trainerCameraPlayer)
+            })
+
+            hls.loadSource(this.playlistUrl)
+            hls.attachMedia(trainerCameraPlayer);
+
+            this.videoHls = hls;
+        } else if (trainerCameraPlayer) {
+            trainerCameraPlayer.src = this.playlistUrl
+        }
+
     }
-  }, [hls, playlistUrl])
 
-
-  const onCanPlay = () => {
-    if (trainerCameraPlayer.current && replayPlaying) {
-      try {
-        trainerCameraPlayer.current.play().catch((err) => {
-          // console.error(err)
+    onMusicVideoCanPlay(replayPlaying: boolean) {
+        this.getMusicPlayerConditionally((e) => {
+            if (replayPlaying) {
+                e.play().catch(() => {
+                })
+            } else {
+                e.pause()
+            }
         })
-      } catch (e) {
-        console.error(e)
-      }
-    } else if (trainerCameraPlayer.current && !replayPlaying) {
-      trainerCameraPlayer.current.pause()
-    }
-  }
 
-  const onMusicCanPlay = () => {
-    if(musicPlayer.current && replayPlaying) {
-      try {
-        musicPlayer.current.play().catch(() => {})
-      } catch(e) {
-        console.error(e)
-      }
-    } else if(musicPlayer.current && !replayPlaying) {
-      musicPlayer.current.pause()
     }
-  }
 
-  useEffect(() => {
-    if (!trainerCameraPlayer.current) {
-      return
-    }
-    try {
-      if (replayPlaying) {
-        trainerCameraPlayer.current.play().catch((err) => {
-          // console.error(err)
+    onTrainerVideoCanPlay(replayPlaying: boolean) {
+        this.getMusicPlayerConditionally((e) => {
+            if (replayPlaying) {
+                e.play().catch(() => {
+                })
+            } else {
+                e.pause()
+            }
         })
-        musicPlayer.current?.play()?.catch(() => {
-          return null
-        })
-      } else {
-        trainerCameraPlayer.current.pause()
-        musicPlayer.current?.pause()
-      }
 
-    } catch (e) {
-      // console.error(e)
     }
-  }, [replayPlaying])
+}
 
+const TrainerCamera = (props: {
+    musicId: string
+    videoId: string
+    onTrainerCanPlay: () => void,
+    onMusicCanPlay: () => void
+}) => {
 
-  // @ts-ignore
-  return (<>
-    {playlistUrl ? <video autoPlay={false} data-setup='{}' id={videoId}
-      // @ts-ignore
-      onCanPlay={onCanPlay} preload="auto" ref={trainerCameraPlayer}>
-    </video> : null}
-    <video autoPlay={false} data-setup="{}" id={musicId} onCanPlay={onMusicCanPlay} preload="auto"
-            // @ts-ignore
-           ref={musicPlayer}
-          // @ts-ignore
-           style={{
-      width: 0,
-      height: 0
-    }}/>
+    // @ts-ignore
+    return (<>
+        <video autoPlay={false} data-setup='{}' id={props.videoId}
+               onCanPlay={props.onTrainerCanPlay} preload="auto">
+        </video>
+        <video autoPlay={false} data-setup="{}" id={props.musicId} onCanPlay={props.onMusicCanPlay} preload="auto"
+               style={{
+                   width: 0,
+                   height: 0
+               }}/>
 
-  </>)
+    </>)
 }
 
 export default TrainerCamera

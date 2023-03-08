@@ -22,7 +22,7 @@ const TrakReplayPlayer = (props: {
 }
 
 export {TrakReplayPlayer};
-export {useReplayVideoPlayer, useReplayCountdown, TrainerCamera} from "./replay"
+export {useReplayVideoPlayer, useReplayCountdown, TrainerCamera, TrainerCameraController} from "./replay"
 export {
     formatMilliseconds,
     formatMillisecondsToReadableDate,
