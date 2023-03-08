@@ -13,7 +13,7 @@ export class TrainerCameraController {
 
     private videoHls: Hls | undefined;
     private chromeTabHls: Hls | undefined;
-    private currentMusicResource: AgoraRecording
+    private currentMusicResource?: AgoraRecording
 
     constructor(config: { musicId: string, videoId: string, playlistUrl: string, musicPlaylists: MusicPlaylist[] }) {
         const {musicId, videoId, playlistUrl, musicPlaylists} = config;
@@ -93,26 +93,39 @@ export class TrainerCameraController {
     }
 
     init() {
-        this.initChromeTabMusic();
-        this.initTrainerVideo();
-
-        this.isInit = true;
+        this.isInit = this.initTrainerVideo();
     }
 
-    initChromeTabMusic() {
+    getTainerVideo() {
+        return this.videoHls?.media;
+    }
 
+    getChromeVideo() {
+        return this.chromeTabHls?.media;
+    }
 
-        const playlist = this.musicPlaylists.find((e) => e.resource === this.currentMusicResource.timestamp)
+    initChromeTabMusic(resource?: AgoraRecording) {
+
+        if(resource?.timestamp !== this.currentMusicResource?.timestamp) {
+            this.currentMusicResource = resource;
+            console.log("New chrome tab music resource: ", resource);
+        } else {
+            return;
+        }
+
+        const playlist = this.musicPlaylists.find((e) => e.resource === this.currentMusicResource?.timestamp)
 
         const musicPlayer = document.getElementById(this.musicId);
 
         if (!musicPlayer || !(musicPlayer instanceof HTMLVideoElement)) {
+            console.log("NO CHROME TAB MUSIC VIDEO ELEMENT")
             return;
         }
 
         if (Hls.isSupported()) {
             playlist?.hls.detachMedia()
             playlist?.hls.attachMedia(musicPlayer)
+            playlist?.hls.loadSource(playlist?.url);
 
             const sync = () => {
                 musicPlayer.play().catch((err) => {
@@ -144,7 +157,7 @@ export class TrainerCameraController {
         const trainerCameraPlayer = document.getElementById(this.videoId);
 
         if (!trainerCameraPlayer || !(trainerCameraPlayer instanceof HTMLVideoElement)) {
-            return;
+            return false;
         }
 
         if (Hls.isSupported()) {
@@ -173,6 +186,7 @@ export class TrainerCameraController {
             trainerCameraPlayer.src = this.playlistUrl
         }
 
+        return true;
     }
 
     onMusicVideoCanPlay(replayPlaying: boolean) {
