@@ -33,7 +33,8 @@ interface ReplayLogsControllerContextType {
     logs: OndemandState[],
     takeover: boolean,
     syncTrainerVideo: () => void,
-    syncChromeTabMusic: () => void
+    syncChromeTabMusic: () => void,
+    currentTimestamp: number | undefined
 }
 
 export const ReplayLogsControllerContext = createContext<ReplayLogsControllerContextType>({
@@ -68,7 +69,8 @@ export const ReplayLogsControllerContext = createContext<ReplayLogsControllerCon
     syncChromeTabMusic: () => {
     },
     syncTrainerVideo: () => {
-    }
+    },
+    currentTimestamp: undefined
 })
 
 let lastTimeoutStarted = 0
@@ -101,6 +103,7 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId}: {
     const [currentMusicResource, setCurrentMusicResource] = useState<AgoraRecording | undefined>()
     const [nextResource, setNextResource] = useState<OndemandResource | undefined>()
     const [currentTimer, setCurrentTimer] = useState<Timer | undefined>()
+    const [currentTimestamp, setCurrentTimestamp] = useState<number | undefined>()
 
     // Replay control
     const [replayState, setReplayState] = useState<ReplayState>({
@@ -155,6 +158,9 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId}: {
 
         setTrainerUid(entry.logs[index].trainerUid)
         setCurrentResource(newCurrentResource)
+        if(entry.logs[index].currentTimestamp) {
+            setCurrentTimestamp(Date.parse(entry.logs[index].currentTimestamp))
+        }
         setCurrentMusicResource(entry.logs[index].currentMusic)
         if (index + 1 < entry.logs.length) {
 
@@ -220,16 +226,23 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId}: {
                         setCurrentStage(entry.logs[index].timer!.stage)
                     }
                     break
-                case TrakReplayEvent.trainerTakeover:
-                    setTakeover(true)
-                    break;
-                case TrakReplayEvent.trainerTakeoverEnd:
-                    setTakeover(false)
-                    break;
                 default:
                     break
             }
         })
+
+        for (let i = index; i >= 0; i--) {
+            const current = entry.logs[i];
+            if (current.ondemandEvents.includes(TrakReplayEvent.trainerTakeover)) {
+                setTakeover(true);
+                break;
+            } else if (current.ondemandEvents.includes(TrakReplayEvent.trainerTakeoverEnd)) {
+                setTakeover(false);
+                break;
+            } else if (i == 0) {
+                setTakeover(false);
+            }
+        }
 
         if (!entry.logs[index].timer) {
             for (let i = index; i > 0; i--) {
@@ -424,7 +437,8 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId}: {
         logs: entry?.logs ?? [],
         takeover,
         syncTrainerVideo,
-        syncChromeTabMusic
+        syncChromeTabMusic,
+        currentTimestamp
     }}>{children}</ReplayLogsControllerContext.Provider>)
 }
 
