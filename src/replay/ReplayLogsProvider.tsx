@@ -12,7 +12,8 @@ export const ReplayLogsContext = createContext<ReplayLogsContextType>({
 
 const ReplayLogsProvider = (props: {
   children: any
-  replay: ReplayModel
+  replay: ReplayModel,
+  trim: boolean
 }) => {
 
 
@@ -211,6 +212,38 @@ const ReplayLogsProvider = (props: {
       //   }
       // }))
 
+
+      if(props.trim) {
+
+        const start = props.replay.replay_start ?? Date.parse(copy.logs[0].currentTimestamp);
+        const end = props.replay.replay_end ?? Date.parse(copy.logs[copy.logs.length - 1].currentTimestamp);
+
+        if(start && end) {
+
+          let startIndex = 0;
+          let endIndex = copy.logs.length - 1;
+
+          for(let i = 0; i < copy.logs.length; i++) {
+            const currentLog = copy.logs[i];
+            if(Date.parse(currentLog.currentTimestamp) >= start) {
+              startIndex = i;
+              break;
+            }
+          }
+
+          for(let i = copy.logs.length - 1; i >= 0; i--) {
+            const currentLog = copy.logs[i];
+            if(Date.parse(currentLog.currentTimestamp) <= end) {
+              endIndex = i;
+              break;
+            }
+          }
+
+
+          copy.logs = copy.logs.slice(startIndex, endIndex);
+        }
+
+      }
 
       console.log(copy.logs)
       setEntry(copy)

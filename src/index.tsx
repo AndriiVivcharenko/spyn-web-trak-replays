@@ -10,9 +10,10 @@ const TrakReplayPlayer = (props: {
     buildProgress: (progress: number) => any,
     musicId: string
     videoId: string
-    getVideoPlaylist: GetVideoPlaylist
+    getVideoPlaylist: GetVideoPlaylist,
+    trim?: boolean
 }) => {
-    return (<ReplayLogsProvider replay={props.replay}>
+    return (<ReplayLogsProvider replay={props.replay} trim={props.trim ?? false}>
         <ReplayLogsPlaylistProvider buildProgress={props.buildProgress} getVideoPlaylist={props.getVideoPlaylist}>
             <ReplayLogsControllerProvider videoId={props.videoId} musicId={props.musicId}>
                 {props.children}
