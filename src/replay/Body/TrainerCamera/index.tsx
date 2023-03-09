@@ -13,6 +13,7 @@ export class TrainerCameraController {
 
     private videoHls: Hls | undefined;
     private chromeTabHls: Hls | undefined;
+    private chromeTabVolume: number;
     private currentMusicResource?: AgoraRecording
 
     constructor(config: { musicId: string, videoId: string, playlistUrl: string, musicPlaylists: MusicPlaylist[] }) {
@@ -21,6 +22,13 @@ export class TrainerCameraController {
         this.videoId = videoId;
         this.playlistUrl = playlistUrl;
         this.musicPlaylists = musicPlaylists;
+    }
+
+    setChromeTabVolume(v: number) {
+        this.chromeTabVolume = v;
+        this.getMusicPlayerConditionally(e => {
+            e.volume = this.chromeTabVolume;
+        })
     }
 
     private getVideoPlayerConditionally(onTrainerVideoPlayer: (e: HTMLVideoElement) => void) {
@@ -47,16 +55,17 @@ export class TrainerCameraController {
         onceAttachedChromeTabAudio?: () => void
     }) {
         this.getPlayersConditionally(e => {
-            this.chromeTabHls?.once(Hls.Events.MEDIA_ATTACHED, e => {
-                if (config.onceAttachedTrainerVideo) {
-                    config.onceAttachedTrainerVideo()
+            this.chromeTabHls?.once(Hls.Events.MEDIA_ATTACHED, () => {
+                e.volume = this.chromeTabVolume;
+                if (config.onceAttachedChromeTabAudio) {
+                    config.onceAttachedChromeTabAudio
                 }
             });
             this.chromeTabHls?.attachMedia(e);
         }, e => {
-            this.videoHls?.once(Hls.Events.MEDIA_ATTACHED, e => {
-                if (config.onceAttachedChromeTabAudio) {
-                    config.onceAttachedChromeTabAudio();
+            this.videoHls?.once(Hls.Events.MEDIA_ATTACHED, () => {
+                if (config.onceAttachedTrainerVideo) {
+                    config.onceAttachedTrainerVideo();
                 }
             })
             this.videoHls?.attachMedia(e);
@@ -106,7 +115,7 @@ export class TrainerCameraController {
 
     initChromeTabMusic(resource?: AgoraRecording) {
 
-        if(resource?.timestamp !== this.currentMusicResource?.timestamp) {
+        if (resource?.timestamp !== this.currentMusicResource?.timestamp) {
             this.currentMusicResource = resource;
             console.log("New chrome tab music resource: ", resource);
         } else {
@@ -128,6 +137,7 @@ export class TrainerCameraController {
             playlist?.hls.loadSource(playlist?.url);
 
             const sync = () => {
+                musicPlayer.volume = this.chromeTabVolume;
                 musicPlayer.play().catch((err) => {
                     console.error(err)
                 })
@@ -192,6 +202,7 @@ export class TrainerCameraController {
     onMusicVideoCanPlay(replayPlaying: boolean) {
         this.getMusicPlayerConditionally((e) => {
             if (replayPlaying) {
+                e.volume = this.chromeTabVolume;
                 e.play().catch(() => {
                 })
             } else {
