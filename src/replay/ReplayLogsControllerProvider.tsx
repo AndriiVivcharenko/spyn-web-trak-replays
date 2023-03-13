@@ -76,13 +76,14 @@ export const ReplayLogsControllerContext = createContext<ReplayLogsControllerCon
 let lastTimeoutStarted = 0
 export let timeoutElapsed = 0
 
-const ReplayLogsControllerProvider = ({children, videoId, musicId}: {
+const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
     children: any,
     videoId: string,
-    musicId: string
+    musicId: string,
+    trim: boolean
 }) => {
 
-    const {entry} = useContext<ReplayLogsContextType>(ReplayLogsContext)
+    const {entry, trim: trimConfig} = useContext<ReplayLogsContextType>(ReplayLogsContext)
 
 
     // Logs related
@@ -128,37 +129,35 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId}: {
 
         setCurrentLogsIndex(index)
 
-        if (changeTrainerVideoPos) {
+        const video: HTMLVideoElement | HTMLElement | null = document.getElementById(videoId)
+        if (video instanceof HTMLVideoElement) {
+            syncVideoElementTime({
+                video: video,
+                entry: entry,
+                index: index,
+                event: TrakReplayEvent.recordingStarted,
+                closestToCurrent: false,
+                diffTrigger: changeTrainerVideoPos ? 0 : 1
+            })
+        }
 
-
-            const video: HTMLVideoElement | HTMLElement | null = document.getElementById(videoId)
-            if (video instanceof HTMLVideoElement) {
-                syncVideoElementTime({
-                    video: video,
-                    entry: entry,
-                    index: index,
-                    event: TrakReplayEvent.recordingStarted,
-                    closestToCurrent: false
-                })
-            }
-
-            const music: HTMLVideoElement | HTMLElement | null = document.getElementById(musicId)
-            if (music instanceof HTMLVideoElement) {
-                syncVideoElementTime({
-                    entry: entry,
-                    index: index,
-                    video: music,
-                    event: TrakReplayEvent.chromeTabRecordingStarted,
-                    closestToCurrent: true
-                })
-            }
+        const music: HTMLVideoElement | HTMLElement | null = document.getElementById(musicId)
+        if (music instanceof HTMLVideoElement) {
+            syncVideoElementTime({
+                entry: entry,
+                index: index,
+                video: music,
+                event: TrakReplayEvent.chromeTabRecordingStarted,
+                closestToCurrent: true,
+                diffTrigger: changeTrainerVideoPos ? 0 : 1
+            })
         }
 
         const newCurrentResource = entry.logs[index].currentResource
 
         setTrainerUid(entry.logs[index].trainerUid)
         setCurrentResource(newCurrentResource)
-        if(entry.logs[index].currentTimestamp) {
+        if (entry.logs[index].currentTimestamp) {
             setCurrentTimestamp(Date.parse(entry.logs[index].currentTimestamp))
         }
         setCurrentMusicResource(entry.logs[index].currentMusic)
@@ -345,7 +344,8 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId}: {
             index: currentLogsIndex ?? 0,
             video: video,
             event: TrakReplayEvent.recordingStarted,
-            closestToCurrent: false
+            closestToCurrent: false,
+            diffTrigger: 0
         })
     }, [currentLogsIndex]);
 
@@ -362,13 +362,14 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId}: {
             index: currentLogsIndex ?? 0,
             video: video,
             event: TrakReplayEvent.chromeTabRecordingStarted,
-            closestToCurrent: true
+            closestToCurrent: true,
+            diffTrigger: 0
         })
     }, [currentLogsIndex]);
 
 
     useEffect(() => {
-        if (!entry) {
+        if (!entry || !trimConfig) {
             return
         }
         if (!currentLogsIndex) {
@@ -380,10 +381,10 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId}: {
                 }
             }
             setLastRecordingIndex(lastRecording)
-            processLogEntry(lastRecording, true)
+            processLogEntry(trim ? trimConfig?.startIndex ?? lastRecording : lastRecording, true)
         }
 
-    }, [entry, currentLogsIndex])
+    }, [entry, trim, currentLogsIndex])
 
     useEffect(() => {
 
