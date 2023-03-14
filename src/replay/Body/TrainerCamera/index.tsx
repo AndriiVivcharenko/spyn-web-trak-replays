@@ -14,6 +14,7 @@ export class TrainerCameraController {
     private videoHls: Hls | undefined;
     private chromeTabHls: Hls | undefined;
     private chromeTabVolume: number;
+    private trainerVolume: number;
     private currentMusicResource?: AgoraRecording
 
     constructor(config: { musicId: string, videoId: string, playlistUrl: string, musicPlaylists: MusicPlaylist[] }) {
@@ -28,6 +29,13 @@ export class TrainerCameraController {
         this.chromeTabVolume = v;
         this.getMusicPlayerConditionally(e => {
             e.volume = this.chromeTabVolume;
+        })
+    }
+
+    setTrainerVolume(v: number) {
+        this.trainerVolume = v;
+        this.getVideoPlayerConditionally(e => {
+            e.volume = this.trainerVolume;
         })
     }
 
@@ -64,6 +72,7 @@ export class TrainerCameraController {
             this.chromeTabHls?.attachMedia(e);
         }, e => {
             this.videoHls?.once(Hls.Events.MEDIA_ATTACHED, () => {
+                e.volume = this.trainerVolume;
                 if (config.onceAttachedTrainerVideo) {
                     config.onceAttachedTrainerVideo();
                 }
@@ -202,7 +211,9 @@ export class TrainerCameraController {
     onMusicVideoCanPlay(replayPlaying: boolean) {
         this.getMusicPlayerConditionally((e) => {
             if (replayPlaying) {
-                e.volume = this.chromeTabVolume;
+                if (this.chromeTabVolume) {
+                    e.volume = this.chromeTabVolume;
+                }
                 e.play().catch(() => {
                 })
             } else {
@@ -215,6 +226,9 @@ export class TrainerCameraController {
     onTrainerVideoCanPlay(replayPlaying: boolean) {
         this.getMusicPlayerConditionally((e) => {
             if (replayPlaying) {
+                if (this.trainerVolume) {
+                    e.volume = this.trainerVolume;
+                }
                 e.play().catch(() => {
                 })
             } else {
@@ -229,7 +243,8 @@ const TrainerCamera = (props: {
     musicId: string
     videoId: string
     onTrainerCanPlay: () => void,
-    onMusicCanPlay: () => void
+    onMusicCanPlay: () => void,
+    musicOption: string
 }) => {
 
     // @ts-ignore
@@ -238,6 +253,7 @@ const TrainerCamera = (props: {
                onCanPlay={props.onTrainerCanPlay} preload="auto">
         </video>
         <video autoPlay={false} data-setup="{}" id={props.musicId} onCanPlay={props.onMusicCanPlay} preload="auto"
+               muted={props.musicOption !== "trainersMusic"}
                style={{
                    width: 0,
                    height: 0
