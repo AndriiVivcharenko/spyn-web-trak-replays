@@ -58,6 +58,7 @@ export interface OndemandResource {
 }
 
 export interface Timer {
+  currentTimestamp?: number,
   isPlaying: boolean
   poseBuffer: number
   poses: {

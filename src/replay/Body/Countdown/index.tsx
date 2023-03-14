@@ -29,13 +29,12 @@ const useCountdown = ({playBeeps}: {
         remainExercise,
         remainRecovery,
         replayPlaying,
-        currentTimer,
-        currentTimestamp
+        currentTimer
     } = useContext(ReplayLogsControllerContext)
 
     const runTimer = () => {
         setLastPlayingStartedAt(currentTimer?.startAt)
-        setLeftTime(() => ((currentTimer?.time ?? 1) * 1000) + (currentTimer?.poseBuffer ?? 0) - (currentTimer?.isPlaying && currentTimestamp && currentTimer?.startAt ? currentTimestamp - currentTimer!.startAt : 0))
+        setLeftTime(() => ((currentTimer?.time ?? 1) * 1000) + (currentTimer?.poseBuffer ?? 0))
         setStateInterval((prev: any) => {
             clearInterval(prev)
             return setInterval(() => {

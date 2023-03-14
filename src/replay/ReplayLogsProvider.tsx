@@ -247,6 +247,13 @@ const ReplayLogsProvider = (props: {
             }
 
             for (let i = 0; i < logs.length - 1; i++) {
+
+                const log = logs[i];
+                if (log.timer && log.currentTimestamp) {
+                    log.timer.currentTimestamp = Date.parse(log.currentTimestamp);
+                    log.timer.time -= ((log.timer.currentTimestamp - log.timer.startAt) / 1000);
+                }
+
                 if (Date.parse(logs[i + 1].currentTimestamp) < Date.parse(logs[i].currentTimestamp)) {
                     logs[i + 1].currentTimestamp = new Date(Date.parse(logs[i].currentTimestamp) + 250).toISOString()
                 }
