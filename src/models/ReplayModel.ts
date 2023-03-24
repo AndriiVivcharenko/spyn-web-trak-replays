@@ -121,6 +121,7 @@ export interface ReplayModel {
   logs: OndemandState[]
   coach_name: string
   creator_name: string
+  marketplace?: boolean
 }
 
 export interface StartRecordingResponse {
