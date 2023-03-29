@@ -243,6 +243,19 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
             }
         }
 
+        for (let i = index; i >= 0; i--) {
+            const current = entry.logs[i];
+            if (current.ondemandEvents.includes(TrakReplayEvent.trainerCameraOn)) {
+                setTrainerCameraOn(true);
+                break;
+            } else if (current.ondemandEvents.includes(TrakReplayEvent.trainerCameraOff)) {
+                setTrainerCameraOn(false);
+                break
+            } else if (i == 0) {
+                setTrainerCameraOn(false);
+            }
+        }
+
         if (!entry.logs[index].timer) {
             for (let i = index; i > 0; i--) {
                 const log = entry.logs[i]
