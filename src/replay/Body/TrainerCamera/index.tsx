@@ -253,7 +253,7 @@ const TrainerCamera = (props: {
                onCanPlay={props.onTrainerCanPlay} preload="auto">
         </video>
         <video autoPlay={false} data-setup="{}" id={props.musicId} onCanPlay={props.onMusicCanPlay} preload="auto"
-               muted={props.musicOption !== "trainersMusic"}
+               muted={props.musicOption !== "trainersMusic" && props.musicOption !== "lowIntensity"}
                style={{
                    width: 0,
                    height: 0
