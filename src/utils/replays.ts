@@ -42,8 +42,8 @@ export const syncVideoElementTime = (config: {
     console.log(`${secondsElapsed} + (${timeoutElapsed} / 1000) + 0.25 = `, secondsElapsed + (timeoutElapsed / 1000) + 0.25)
 
     const newTime = secondsElapsed + (timeoutElapsed / 1000) + 0.25;
-    console.log("diff trigger", config.diffTrigger);
     if (Math.abs(config.video.currentTime - newTime) >= config.diffTrigger) {
+        console.log("diff trigger", config.diffTrigger);
         console.log(`synchronize ${config.elementType} element`, config.video.currentTime);
         config.video.currentTime = newTime;
     }
