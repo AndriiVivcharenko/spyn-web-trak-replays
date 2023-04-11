@@ -137,7 +137,6 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
                 index: index,
                 event: TrakReplayEvent.recordingStarted,
                 closestToCurrent: false,
-
                 diffTrigger: changeTrainerVideoPos ? 0 : 2
             })
         }
@@ -150,7 +149,6 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
                 video: music,
                 event: TrakReplayEvent.chromeTabRecordingStarted,
                 closestToCurrent: true,
-
                 diffTrigger: changeTrainerVideoPos ? 0 : 1
             })
         }
