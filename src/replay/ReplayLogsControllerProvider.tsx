@@ -130,14 +130,14 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
         setCurrentLogsIndex(index)
 
         const video: HTMLVideoElement | HTMLElement | null = document.getElementById(videoId)
-        if (video instanceof HTMLVideoElement) {
+        if (video instanceof HTMLVideoElement && changeTrainerVideoPos) {
             syncVideoElementTime({
                 video: video,
                 entry: entry,
                 index: index,
                 event: TrakReplayEvent.recordingStarted,
                 closestToCurrent: false,
-                diffTrigger: changeTrainerVideoPos ? 0 : 2.1,
+                diffTrigger: changeTrainerVideoPos ? 0 : 1,
                 elementType: 'video'
             })
         }
