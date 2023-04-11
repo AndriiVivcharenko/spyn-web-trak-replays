@@ -137,7 +137,8 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
                 index: index,
                 event: TrakReplayEvent.recordingStarted,
                 closestToCurrent: false,
-                diffTrigger: changeTrainerVideoPos ? 0 : 2
+                diffTrigger: changeTrainerVideoPos ? 0 : 2,
+                elementType: 'video'
             })
         }
 
@@ -149,7 +150,8 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
                 video: music,
                 event: TrakReplayEvent.chromeTabRecordingStarted,
                 closestToCurrent: true,
-                diffTrigger: changeTrainerVideoPos ? 0 : 1
+                diffTrigger: changeTrainerVideoPos ? 0 : 1,
+                elementType: 'music'
             })
         }
 
@@ -358,7 +360,8 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
             video: video,
             event: TrakReplayEvent.recordingStarted,
             closestToCurrent: false,
-            diffTrigger: 0
+            diffTrigger: 0,
+            elementType: 'video'
         })
     }, [currentLogsIndex]);
 
@@ -376,7 +379,8 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
             video: video,
             event: TrakReplayEvent.chromeTabRecordingStarted,
             closestToCurrent: true,
-            diffTrigger: 0
+            diffTrigger: 0,
+            elementType: 'music'
         })
     }, [currentLogsIndex]);
 

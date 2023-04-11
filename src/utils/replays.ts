@@ -8,7 +8,8 @@ export const syncVideoElementTime = (config: {
     video: HTMLVideoElement,
     event: TrakReplayEvent,
     closestToCurrent: boolean,
-    diffTrigger: number
+    diffTrigger: number,
+    elementType: string
 }) => {
 
     const {entry, index} = config;
@@ -41,8 +42,9 @@ export const syncVideoElementTime = (config: {
     console.log(`${secondsElapsed} + (${timeoutElapsed} / 1000) + 0.25 = `, secondsElapsed + (timeoutElapsed / 1000) + 0.25)
 
     const newTime = secondsElapsed + (timeoutElapsed / 1000) + 0.25;
+    console.log("diff trigger", config.diffTrigger);
     if (Math.abs(config.video.currentTime - newTime) >= config.diffTrigger) {
-        console.log("calling synchronize video element", config.video.currentTime);
+        console.log(`synchronize ${config.elementType} element`, config.video.currentTime);
         config.video.currentTime = newTime;
     }
 
