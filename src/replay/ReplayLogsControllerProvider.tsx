@@ -130,6 +130,7 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
         setCurrentLogsIndex(index)
 
         const video: HTMLVideoElement | HTMLElement | null = document.getElementById(videoId)
+        // sync is being called too often, only call sync on seek
         if (video instanceof HTMLVideoElement && changeTrainerVideoPos) {
             syncVideoElementTime({
                 video: video,

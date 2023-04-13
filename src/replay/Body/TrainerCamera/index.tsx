@@ -224,7 +224,7 @@ export class TrainerCameraController {
     }
 
     onTrainerVideoCanPlay(replayPlaying: boolean) {
-        this.getMusicPlayerConditionally((e) => {
+        this.getVideoPlayerConditionally((e) => {
             if (replayPlaying) {
                 if (this.trainerVolume) {
                     e.volume = this.trainerVolume;
