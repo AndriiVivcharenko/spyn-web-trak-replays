@@ -3,5 +3,6 @@ export {
     formatMillisecondsToReadableDate,
     getExerciseDuration,
     getExerciseFlip,
-    onTimerVideoUpdate
+    onTimerVideoUpdate,
+    syncVideoElementTime
 } from "./replays"

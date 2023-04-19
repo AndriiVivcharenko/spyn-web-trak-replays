@@ -29,7 +29,8 @@ export {
     formatMillisecondsToReadableDate,
     onTimerVideoUpdate,
     getExerciseFlip,
-    getExerciseDuration
+    getExerciseDuration,
+    syncVideoElementTime
 } from "./utils"
 export {
     ReplayModel,
