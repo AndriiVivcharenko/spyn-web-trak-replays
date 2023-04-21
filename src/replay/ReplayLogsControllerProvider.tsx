@@ -133,14 +133,14 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
         // sync is being called too often, only call sync on seek
         // or state changes, e.g., trainer camera going to takeover mode
         // TODO: revisit and improve this bloc
-        if (video instanceof HTMLVideoElement) {
+        if (video instanceof HTMLVideoElement && changeTrainerVideoPos) {
             syncVideoElementTime({
                 video: video,
                 entry: entry,
                 index: index,
                 event: TrakReplayEvent.recordingStarted,
                 closestToCurrent: false,
-                diffTrigger: changeTrainerVideoPos ? 0 : 0.67,
+                diffTrigger: changeTrainerVideoPos ? 0 : 1,
                 elementType: 'video'
             })
         }
