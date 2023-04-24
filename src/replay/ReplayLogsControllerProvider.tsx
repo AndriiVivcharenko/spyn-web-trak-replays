@@ -357,9 +357,10 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
         if (!video || !(video instanceof HTMLVideoElement)) {
             return;
         }
+        const syncToStart = trim ? trimConfig?.startIndex ?? lastRecordingIndex : lastRecordingIndex;
         syncVideoElementTime({
             entry: entry,
-            index: currentLogsIndex ?? 0,
+            index: currentLogsIndex ?? syncToStart,
             video: video,
             event: TrakReplayEvent.recordingStarted,
             closestToCurrent: false,
