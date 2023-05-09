@@ -145,3 +145,21 @@ export interface AgoraRecording {
   readonly acquie: AcquireResponse
 
 }
+
+export function parseDateFromAny(timestamp: any): number {
+  let parsedTimestamp;
+  if (typeof timestamp === 'string') {
+    // if timestamp is a string, then parse
+    parsedTimestamp = Date.parse(timestamp);
+  } else if (typeof timestamp === 'number') {
+    // return numbers as is
+    parsedTimestamp = timestamp;
+  } else if (timestamp._seconds) {
+    // if firestore timestamp, return ms
+    // data structure is { _seconds: 1678135704, _nanoseconds: 495000000 }
+    parsedTimestamp = timestamp._seconds * 1000;
+  } else {
+    throw new TypeError("Timestamp type is unhandled");
+  }
+  return parsedTimestamp;
+}

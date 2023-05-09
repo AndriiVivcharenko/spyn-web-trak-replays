@@ -14,6 +14,10 @@ export const syncVideoElementTime = (config: {
 
     const {entry, index} = config;
 
+    if (index >= entry.logs.length) {
+        return;
+    }
+
     let i = -1
 
     if (config.closestToCurrent) {
