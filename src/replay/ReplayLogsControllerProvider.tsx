@@ -1,7 +1,15 @@
 import React, {createContext, useCallback, useContext, useEffect, useState} from "react"
 import {ReplayLogsContext, ReplayLogsContextType} from "./ReplayLogsProvider"
 import {CallMode, TimerStage} from "./types"
-import {AgoraRecording, OndemandParticipant, OndemandResource, OndemandState, Timer, TrakReplayEvent} from "../models"
+import {
+    AgoraRecording,
+    MusicSettings,
+    OndemandParticipant,
+    OndemandResource,
+    OndemandState,
+    Timer,
+    TrakReplayEvent
+} from "../models"
 import {syncVideoElementTime} from "../utils/replays";
 
 interface ReplayState {
@@ -34,7 +42,8 @@ interface ReplayLogsControllerContextType {
     takeover: boolean,
     syncTrainerVideo: () => void,
     syncChromeTabMusic: () => void,
-    currentTimestamp: number | undefined
+    currentTimestamp: number | undefined,
+    currentMusicSettings: MusicSettings | undefined
 }
 
 export const ReplayLogsControllerContext = createContext<ReplayLogsControllerContextType>({
@@ -70,7 +79,8 @@ export const ReplayLogsControllerContext = createContext<ReplayLogsControllerCon
     },
     syncTrainerVideo: () => {
     },
-    currentTimestamp: undefined
+    currentTimestamp: undefined,
+    currentMusicSettings: undefined
 })
 
 let lastTimeoutStarted = 0
@@ -105,6 +115,7 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
     const [nextResource, setNextResource] = useState<OndemandResource | undefined>()
     const [currentTimer, setCurrentTimer] = useState<Timer | undefined>()
     const [currentTimestamp, setCurrentTimestamp] = useState<number | undefined>()
+    const [currentMusicSettings, setCurrentMusicSettings] = useState<MusicSettings>();
 
     // Replay control
     const [replayState, setReplayState] = useState<ReplayState>({
@@ -304,6 +315,10 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
             setCurrentStage(entry.logs[index].timer!.stage)
         }
 
+        if (entry.logs[index].currentMusicSettings !== currentMusicSettings) {
+            setCurrentMusicSettings(entry.logs[index].currentMusicSettings);
+        }
+
         // console.log(`Remain Recovery: ${remainRecovery} Remain Exercise: ${remainExercise}`)
 
         if (replayState && entry.logs.length > 0 && index + 1 < entry.logs.length - 1) {
@@ -459,7 +474,8 @@ const ReplayLogsControllerProvider = ({children, videoId, musicId, trim}: {
         takeover,
         syncTrainerVideo,
         syncChromeTabMusic,
-        currentTimestamp
+        currentTimestamp,
+        currentMusicSettings
     }}>{children}</ReplayLogsControllerContext.Provider>)
 }
 

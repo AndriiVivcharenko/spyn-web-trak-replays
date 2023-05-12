@@ -44,7 +44,9 @@ export {
     TrakPose,
     AgoraRecording,
     AcquireResponse,
-    StartRecordingResponse
+    StartRecordingResponse,
+    MusicSettings,
+    SpynSong
 } from "./models"
 export {
     ReplayLogsPlaylistContext, MusicPlaylist, GetVideoPlaylist, GetVideoPlayerListConfig

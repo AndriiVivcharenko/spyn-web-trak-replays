@@ -71,6 +71,18 @@ export interface Timer {
   totalTime?: number
 }
 
+export interface SpynSong {
+  readonly url: string
+  readonly artist: string
+  readonly release: string
+}
+
+export interface MusicSettings {
+  readonly channel: any
+  readonly enabled: boolean
+  readonly spynSong?: SpynSong
+}
+
 export interface OndemandState {
   currentTimestamp: any
   ondemandEvents: TrakReplayEvent[]
@@ -78,6 +90,7 @@ export interface OndemandState {
   trainerUid?: number
   currentResource?: OndemandResource
   currentMusic?: AgoraRecording
+  currentMusicSettings?: MusicSettings
   timer?: Timer
 }
 
